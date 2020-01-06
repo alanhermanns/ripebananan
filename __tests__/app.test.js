@@ -6,6 +6,7 @@ const connect = require('../lib/utils/connect');
 const mongoose = require('mongoose');
 const Studio = require('../lib/models/Studio');
 const Actor = require('../lib/models/Actor');
+const Reviewer = require('../lib/models/Reviewer');
 
 describe('app routes', () => {
   beforeAll(() => {
@@ -32,6 +33,14 @@ describe('app routes', () => {
         name : 'fred',
         DOB : '1/2/1977',
         POB : 'Somewhere'
+      }
+      );
+  });
+  beforeEach(() => {
+    return Reviewer
+      .create({
+        name : 'fred',
+        company : 'Company'
       }
       );
   });
@@ -81,9 +90,18 @@ describe('app routes', () => {
     return request(app)
       .get('/films')
       .then(res => {
-        expect(res.body).toEqual(
-          { 'message': 'Not Found', 'status': 404 }
-        );
+        expect(res.body).toEqual([]);
+      });
+  });
+  it('gets all reviewers', () => {
+    return request(app)
+      .get('/reviewers')
+      .then(res => {
+        expect(res.body).toEqual([{ 
+          '__v': 0,
+          '_id': expect.any(String),
+          'company': 'Company',
+          'name': 'fred' }]);
       });
   });
 });
