@@ -185,6 +185,25 @@ describe('app routes', () => {
         });
       });
   });
+  it('gets a modifies by id', async() => {
+    const reviewer = await Reviewer.create({
+      'company': 'Doug',
+      'name': 'Doug'
+    });
+    return request(app)
+      .put(`/reviewers/${reviewer._id}`)
+      .send({
+        company: 'Frank'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          '__v': 0,
+          '_id': reviewer._id.toString(),
+          'company': 'Frank',
+          'name': 'Doug'
+        });
+      });
+  });
   it('posts a studio', () => {
     return request(app)
       .post('/studios')
