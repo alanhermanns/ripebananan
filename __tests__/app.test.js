@@ -349,7 +349,7 @@ describe('app routes', () => {
       'reviewer': mongoose.Types.ObjectId(),
       'film': mongoose.Types.ObjectId()
     };
-    let newArrOf100 = arrOf100.map(async item => await Review
+    arrOf100.map(async() => await Review
       .create(review));
     return request(app)
       .get('/reviews')
