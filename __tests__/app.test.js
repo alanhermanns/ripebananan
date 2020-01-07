@@ -8,6 +8,7 @@ const Studio = require('../lib/models/Studio');
 const Actor = require('../lib/models/Actor');
 const Reviewer = require('../lib/models/Reviewer');
 let studio;
+let actor;
 describe('app routes', () => {
   beforeAll(() => {
     connect();
@@ -99,11 +100,22 @@ describe('app routes', () => {
         ]);
       });
   });
-  it('gets an actor by id', () => {
+  it('gets an actor by id', async() => {
+    actor = await Actor
+      .create({
+        name : 'fred',
+        DOB : '1/2/1977',
+        POB : 'Somewhere'
+      });
     return request(app)
-      .get('/actors/1234')
+      .get(`/actors/${actor._id}`)
       .then(res => {
-        expect(res.body).toEqual({ 'message': 'Not Found', 'status': 404 });
+        expect(res.body).toEqual({ 
+          'DOB': '1977-01-02T08:00:00.000Z', 
+          'POB': 'Somewhere',
+          '__v': 0,
+          '_id': actor._id.toString(),
+          'name': 'fred' });
       });
   });
   it('gets all films', () => {
@@ -123,6 +135,31 @@ describe('app routes', () => {
           'id': expect.any(String),
           'company': 'Company',
           'name': 'fred' }]);
+      });
+  });
+  it('posts a studio', () => {
+    return request(app)
+      .post('/studios')
+      .send(
+        {
+          name : 'studio',
+          address : {
+            city : 'city',
+            state: 'bad shape',
+            country: 'state',
+          }
+        })
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          _id: res.body._id,
+          name : 'studio',
+          address : {
+            city : 'city',
+            state: 'bad shape',
+            country: 'state',
+          }
+        });
       });
   });
 });
