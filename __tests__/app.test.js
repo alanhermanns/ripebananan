@@ -162,4 +162,36 @@ describe('app routes', () => {
         });
       });
   });
+  it('posts a film', () => {
+    return request(app)
+      .post('/films')
+      .send(
+        {
+          title : 'studio',
+          studioId : mongoose.Types.ObjectId(),
+          released: '2/2/2000',
+          cast: [{
+            role: {
+              nameOfCharacter : 'charazard',
+              actorId : mongoose.Types.ObjectId()
+            }
+          }]
+        })
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          '_id': res.body._id,
+          'cast': [{
+            '_id': res.body.cast[0]._id,
+            'role': {
+              'actorId': res.body.cast[0].role.actorId,
+              'nameOfCharacter': 'charazard',
+            },
+          }],
+          'title': 'studio',
+          'released': '2000-02-02T08:00:00.000Z',
+          'studioId': res.body.studioId,
+        });
+      });
+  });
 });
