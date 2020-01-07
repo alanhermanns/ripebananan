@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const Studio = require('../lib/models/Studio');
 const Actor = require('../lib/models/Actor');
 const Reviewer = require('../lib/models/Reviewer');
+const Review = require('../lib/models/Review');
+const Film = require('../lib/models/Film');
 let studio;
 let actor;
 describe('app routes', () => {
@@ -26,8 +28,7 @@ describe('app routes', () => {
           state: 'bad shape',
           country: 'state',
         }
-      }
-      );
+      });
   });
   beforeEach(() => {
     return Actor
@@ -118,6 +119,38 @@ describe('app routes', () => {
           'name': 'fred' });
       });
   });
+  it('gets an film by id', async() => {
+    const film = await Film
+      .create({
+        title : 'good title',
+        studioId : mongoose.Types.ObjectId(),
+        released: '2/2/1990',
+        cast: [{
+          role: {
+            nameOfCharacter : 'blink182',
+            actorId : mongoose.Types.ObjectId()
+          }
+        }]
+      });
+    return request(app)
+      .get(`/films/${film._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          _id: film._id.toString(),
+          title : 'good title',
+          studioId : res.body.studioId,
+          released: '1990-02-02T08:00:00.000Z',
+          cast: [{
+            _id: res.body.cast[0]._id,
+            role: {
+              nameOfCharacter : 'blink182',
+              actorId : res.body.cast[0].role.actorId
+            }
+          }]
+        });
+      });
+  });
   it('gets all films', () => {
     return request(app)
       .get('/films')
@@ -132,9 +165,24 @@ describe('app routes', () => {
         expect(res.body).toEqual([{ 
           '__v': 0,
           '_id': expect.any(String),
-          'id': expect.any(String),
           'company': 'Company',
           'name': 'fred' }]);
+      });
+  });
+  it('gets a reviewer by id', async() => {
+    const reviewer = await Reviewer.create({
+      'company': 'Doug',
+      'name': 'Doug'
+    });
+    return request(app)
+      .get(`/reviewers/${reviewer._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          '__v': 0,
+          '_id': reviewer._id.toString(),
+          'company': 'Doug',
+          'name': 'Doug'
+        });
       });
   });
   it('posts a studio', () => {
@@ -192,6 +240,86 @@ describe('app routes', () => {
           'released': '2000-02-02T08:00:00.000Z',
           'studioId': res.body.studioId,
         });
+      });
+  });
+  it('posts an actor', () => {
+    return request(app)
+      .post('/actors')
+      .send(
+        {
+          name : 'fred',
+          DOB : '1/2/1977',
+          POB : 'Somewhere'
+          
+        })
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          '_id': res.body._id,
+          'name': 'fred',
+          DOB : '1977-01-02T08:00:00.000Z',
+          POB : 'Somewhere'
+        });
+      });
+  });
+  it('posts a reviewer', () => {
+    return request(app)
+      .post('/reviewers')
+      .send(
+        {
+          name : 'Fred',
+          company : 'Thinger'
+        })
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          '_id': res.body._id,
+          'name': 'Fred',
+          'company': 'Thinger'
+        });
+      });
+  });
+  it('posts a review', async() => {
+    const review = {
+      'rating': '3',
+      'review': 'Poorly written, I think.',
+      'reviewer': mongoose.Types.ObjectId(),
+      'film': mongoose.Types.ObjectId()
+    };
+    return request(app)
+      .post('/reviews')
+      .send(review)
+      .then(res => {
+        expect(res.body).toEqual({
+          '__v': 0,
+          '_id': res.body._id,
+          'rating': 3,
+          'reviewer': expect.any(String),
+          'review': 'Poorly written, I think.',
+          'film': expect.any(String)
+        }
+        );
+      });
+  });
+  it('deletes a review', async() => {
+    const review = await Review.create({
+      'rating': '3',
+      'review': 'Poorly written, I think.',
+      'reviewer': mongoose.Types.ObjectId(),
+      'film': mongoose.Types.ObjectId()
+    });
+    return request(app)
+      .delete(`/reviews/${review._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          '__v': 0,
+          '_id': review._id.toString(),
+          'rating': 3,
+          'reviewer': res.body.reviewer.toString(),
+          'review': 'Poorly written, I think.',
+          'film': res.body.film.toString()
+        }
+        );
       });
   });
 });
