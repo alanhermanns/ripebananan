@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const Studio = require('../lib/models/Studio');
 const Actor = require('../lib/models/Actor');
 const Reviewer = require('../lib/models/Reviewer');
-
+let studio;
 describe('app routes', () => {
   beforeAll(() => {
     connect();
@@ -16,8 +16,9 @@ describe('app routes', () => {
     return mongoose.connection.dropDatabase();
   });
   beforeEach(() => {
-    return Studio
+    studio = Studio
       .create({
+        _id : mongoose.Types.ObjectId(),
         name : 'studio',
         address : {
           city : 'city',
@@ -54,17 +55,36 @@ describe('app routes', () => {
         expect(res.body).toEqual([
           {
             '_id' : expect.any(String),
-            'id' : expect.any(String),
             'name' : 'studio'
           }
         ]);
       });
   });
   it('gets a studio by id', async() => {
-    return request(app)
-      .get('/studios/1234')
-      .then(res => {
-        expect(res.body).toEqual({ 'message': 'Not Found', 'status': 404 });
+    studio = await Studio
+      .create({
+        name : 'thinger',
+        address : {
+          city : 'city2',
+          state: 'good shape',
+          country: 'state',
+        }
+      })
+      .then(studio => {
+        return request(app)
+          .get(`/studios/${studio._id}`)
+          .then(res => {
+            expect(res.body).toEqual({
+              '__v': 0,
+              '_id' : studio._id.toString(),
+              'name' : 'thinger',
+              'address' : {
+                'city' : 'city2',
+                'state': 'good shape',
+                'country': 'state',
+              },
+            });
+          });
       });
   });
   it('gets all actors', () => {
@@ -100,6 +120,7 @@ describe('app routes', () => {
         expect(res.body).toEqual([{ 
           '__v': 0,
           '_id': expect.any(String),
+          'id': expect.any(String),
           'company': 'Company',
           'name': 'fred' }]);
       });
