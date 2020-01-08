@@ -27,7 +27,7 @@ module.exports = async({ actor = 100, studio = 10, film = 30, reviewer = 10, rev
     cast: [...Array({ min : 1, max : actor }).map(() => ({
       role: {
         nameOfCharacter : chance.name(),
-        actorId : chance.pickone(actors.map(actor => actor._id))
+        actorId : chance.pickone(actors.map(anActor => anActor._id))
       }
     }))]
   })));
