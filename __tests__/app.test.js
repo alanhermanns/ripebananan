@@ -90,30 +90,37 @@ it('gets an film by id', async() => {
       });
     });
 });
-it('gets all films', () => {
-  const films = getFilms();
+it('gets all films', async() => {
+  const films = await getFilms();
   return request(app)
     .get('/films')
     .then(res => {
-      res.body.forEach(film => {
-        let theCast = film.cast.map(thing => thing);
-        expect(film).toEqual(
-          expect.objectContaining({
-            __v: 0,
-            _id: film._id.toString(),
-            title : film.title,
-            studioId : {
-              __v: 0,
-              _id: film.studioId._id,
-              address: film.studioId.address,
-              name: film.studioId.name
-            },
-            released: film.released,
-            cast: theCast
-          }));
+      expect(res.body).toHaveLength(films.length);
+      films.forEach(film => {
+        //let theCast = film.cast.map(thing => thing);
+        expect(res.body).toContainEqual({
+          _id: film._id,
+          title: film.title,
+          released: film.released,
+          studioId: expect.any(Object)
+        });
       });
     });
 });
+// expect.objectContaining({
+//   __v: 0,
+//   _id: film._id.toString(),
+//   title : film.title,
+//   studioId : {
+//     __v: 0,
+//     _id: film.studioId._id,
+//     address: film.studioId.address,
+//     name: film.studioId.name
+//   },
+//   released: film.released,
+//   cast: theCast
+// }));
+
 it('gets all reviewers', async() => {
   const reviewers = await getReviewers();
   return request(app)
@@ -289,26 +296,15 @@ it('deletes a review', async() => {
       );
     });
 });
-// it('gets the top 100 reviews', async() => {
-//   const reviews = await getReviews();
-//   console.log(reviews);
-//   return request(app)
-//     .get('/reviews')
-//     .then(res => {
-//       reviews.forEach(async review => {
-//         expect(res.body).toEqual(
-//           expect.objectContaining({
-//             rating: {
-//               Type: Number,
-//               min: 3,
-//               max: 5,
-//             },
-//             film: {
-//               _id: theFilm._id,
-//               title: theFilm.title
-//             }
-//           })
-//         );
-//       });
-//     });
-//  }); 
+it('gets the top 100 reviews', async() => {
+  const reviews = await getReviews();
+  //200
+  return request(app)
+    .get('/reviews')
+    .then(res => {
+      expect(res.body).toHaveLength(100);
+      res.body.forEach(review => {
+        expect(reviews).toContainEqual(review);
+      });
+    });
+}); 
